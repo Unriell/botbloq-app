@@ -1,0 +1,16 @@
+<ion-view view-title="Joystick">
+    <ion-content>
+        <div class="row">
+            <div class="col">
+                <div ng-repeat="button in directionButtons">
+                    <button class="button button-balanced" ng-click="actionClick(button)">{{button.label}}</button>
+                </div>
+            </div>
+            <div class="col">
+                <div ng-repeat="button in actionButtons">
+                    <button class="button button-assertive" ng-click="actionClick(button)">{{button.label}}</button>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

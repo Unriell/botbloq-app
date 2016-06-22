@@ -1,0 +1,9 @@
+.vscode/
+.DS_Store
+node_modules/
+app/plugins/
+
+platforms/
+bower_components/
+
+.idea/
