@@ -35,6 +35,26 @@ angular.module('botbloq')
             })
         }
 
+        function getLocalIp() {
+            return new $q(function (result, reject) {
+                window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;   //compatibility for firefox and chrome
+                var pc = new RTCPeerConnection({iceServers: []}), noop = function () {
+                };
+                pc.createDataChannel('');    //create a bogus data channel
+                pc.createOffer(pc.setLocalDescription.bind(pc), noop);    // create offer and set local description
+                pc.onicecandidate = function (ice) {  //listen for candidate events
+                    if (!ice || !ice.candidate || !ice.candidate.candidate) {
+                        reject("Not a valid IP");
+                        return;
+                    }
+                    var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
+                    pc.onicecandidate = noop;
+                    result(myIP);
+                };
+            });
+
+        }
+
         var api = new HubsAPI(15000, webSocketWrapper, $q);
 
         api.onClose = function (error) {
@@ -79,15 +99,21 @@ angular.module('botbloq')
             if (window.networkinterface) {
                 networkinterface.getIPAddress(function (ip) {
                     alert(ip);
-                }, function (error){
-                    console.error(error);
+                }, function () {
+                    getLocalIp().then(function (ip) {
+                        api.findRosServer(ip);
+                    }).catch(function () {
+                        api.findRosServer('172.16.30.101');
+                    });
                 });
             } else {
-                api.findRosServer('192.168.43.159');
+                getLocalIp().then(function (ip) {
+                    api.findRosServer(ip);
+                }).catch(function (error) {
+                    api.findRosServer('172.16.30.101');
+                });
             }
         }, false);
-
-
-
+        
         return api;
     });
